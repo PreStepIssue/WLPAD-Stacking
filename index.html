@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stack Web Game</title>
+  <style>
+    body { margin: 0; overflow: hidden; background: #333; }
+    canvas { display: block; margin: auto; }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let stack = [{ x: canvas.width / 2, y: canvas.height - 30, width: 300 }];
+    let speed = 3;
+    let direction = 1;
+    let currentBlock = { x: 0, y: canvas.height - 60, width: 300 };
+    let gameOver = false;
+
+    function drawBlock(block, color = 'white') {
+      ctx.fillStyle = color;
+      ctx.fillRect(block.x - block.width / 2, block.y, block.width, 30);
+    }
+
+    function update() {
+      if (gameOver) return;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      stack.forEach(b => drawBlock(b));
+
+      currentBlock.x += speed * direction;
+
+      if (currentBlock.x - currentBlock.width / 2 <= 0 || currentBlock.x + currentBlock.width / 2 >= canvas.width) {
+        direction *= -1;
+      }
+
+      drawBlock(currentBlock, 'red');
+
+      requestAnimationFrame(update);
+    }
+
+    function placeBlock() {
+      let topBlock = stack[stack.length - 1];
+      let delta = currentBlock.x - topBlock.x;
+
+      if (Math.abs(delta) > currentBlock.width) {
+        gameOver = true;
+        alert('Game Over! Stack Height: ' + stack.length);
+        return;
+      }
+
+      currentBlock.width -= Math.abs(delta);
+      currentBlock.x = topBlock.x + delta / 2;
+      stack.push({ ...currentBlock });
+
+      currentBlock = {
+        x: 0,
+        y: currentBlock.y - 30,
+        width: currentBlock.width
+      };
+
+      if (currentBlock.y < 0) {
+        alert('You Win! Stack Height: ' + stack.length);
+        gameOver = true;
+      }
+    }
+
+    window.addEventListener('click', () => {
+      if (!gameOver) placeBlock();
+    });
+
+    update();
+
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+  </script>
+</body>
+</html>
